@@ -1,0 +1,137 @@
+# NYR CombatTag Pro
+#
+# A player hit by another player is "in combat" (tagged) for a while. While tagged:
+#
+#   - a countdown shows on their action bar,
+#   - commands that would carry them out of the fight (/spawn, /home, /tpa...) are refused,
+#   - logging out leaves a dummy behind where they stood. Other players can kill it. If it dies, it drops what the player
+#     carried and the player dies the next time they join. If it survives its time, it vanishes and the player keeps
+#     everything. If the player comes back first, the dummy goes, they get its health and are in combat again.
+#
+# On Minecraft 1.21.9 and newer the dummy is a mannequin given the player's own profile (so it shows their skin where the
+# server has it); on older servers it is a mob with its AI switched off (see dummy.fallback-entity). No NPC plugin is needed.
+#
+# After editing, run /combattag reload.
+
+# Switch the plugin off without removing it.
+enabled: true
+
+# How long a player stays in combat after a hit, in seconds. Every new hit starts the time again.
+combat-seconds: 15
+
+tag-on:
+  # A harmful splash or lingering potion (poison, harming, slowness, weakness...) thrown by one player that reaches another
+  # tags both, as a hit does.
+  harmful-potions: true
+  # A mob hitting a player tags the player (only the player: a mob is never "in combat").
+  mobs: false
+
+blocked-commands:
+  # blacklist: the commands below are refused in combat, everything else is allowed.
+  # whitelist: only the commands below are allowed in combat, everything else is refused.
+  mode: blacklist
+  # Command names without the "/". A "plugin:" prefix is ignored when a player types one, so "home" also stops
+  # "/essentials:home". List a plugin's aliases too if they are separate commands (Essentials: "ehome", "etpa"...).
+  # /combattag itself always works, so players can see their timer.
+  list:
+    - spawn
+    - home
+    - homes
+    - sethome
+    - tpa
+    - tpahere
+    - tpaccept
+    - tpyes
+    - tpask
+    - warp
+    - warps
+    - back
+    - rtp
+    - wild
+    - ec
+    - enderchest
+    - echest
+    - hub
+    - lobby
+    - afk
+
+dummy:
+  # Leave a dummy when a player logs out in combat. Off: logging out in combat has no consequence (the tag still refuses
+  # commands).
+  enabled: true
+  # How long the dummy stands, in seconds. If nobody kills it in this time it vanishes and the player keeps everything.
+  seconds: 30
+  # A player kicked by staff or by another plugin normally leaves no dummy. If players can get themselves kicked on purpose
+  # (spamming chat into an anti-spam kick, for example), set this to true.
+  on-kick: false
+  # Use a mannequin with the player's profile where the server has mannequins (1.21.9 and newer). False: always the
+  # fallback mob.
+  mannequin: true
+  # The mob that stands in on servers without mannequins. HUSK never burns in daylight. It has no AI and never drops its
+  # equipment (the equipment is only a copy to show what the player wore).
+  fallback-entity: HUSK
+  # A world on peaceful difficulty removes monsters such as the husk as they spawn. Paper 1.21.8 and newer can keep one there;
+  # on older servers this mob, which peaceful keeps, stands in instead in peaceful worlds.
+  peaceful-fallback-entity: VILLAGER
+  # The name shown above the dummy. {player} is the player's name.
+  name: "&c{player}"
+  # The line shown under a mannequin's name (instead of "NPC"). "" shows none.
+  description: "&7Logged out in combat"
+
+worlds:
+  # Worlds where players can be tagged. "*" means every world.
+  enabled:
+    - "*"
+  # Worlds left alone, such as a lobby or an arena with its own rules. Nobody is tagged there and nobody who logs out there
+  # leaves a dummy.
+  disabled: []
+
+alerts:
+  # Tell staff (players with nyrcombattagpro.alerts) when someone logs out in combat and when a dummy is killed.
+  enabled: true
+  to-staff-chat: true
+  to-console: true
+  # plugins/NYR-CombatTagPro/alerts.log
+  to-log-file: true
+  # The same alert about the same player is sent at most once in this many seconds.
+  cooldown-seconds: 10
+
+messages:
+  prefix: "&8[&cCombat&8] "
+  tagged: "{prefix}&cYou are in combat for {seconds}s. &7Logging out now leaves a dummy behind that other players can kill."
+  no-longer-in-combat: "{prefix}&aYou are no longer in combat."
+  # Shown every second while in combat. "" switches it off.
+  action-bar: "&c⚔ In combat &7- &f{seconds}s &7- don't log out"
+  command-blocked: "{prefix}&cYou cannot use /{command} in combat. &7{seconds}s left."
+  check-tagged: "{prefix}&cYou are in combat for {seconds} more seconds."
+  check-not-tagged: "{prefix}&aYou are not in combat."
+  # Sent to everyone when a dummy is killed.
+  dummy-killed: "{prefix}&f{player} &7logged out in combat and their dummy was killed by &f{killer}&7."
+  # The death message of a player who joins after their dummy was killed.
+  died-while-logged: "{player} died in combat: slain by {killer} while logged out"
+  logged-out-killed: "{prefix}&cYou logged out in combat and {killer} killed your dummy. What you carried was dropped where it stood."
+  logged-out-killed-kept: "{prefix}&cYou logged out in combat and {killer} killed your dummy. keepInventory is on in that world, so you keep your items."
+  dummy-returned: "{prefix}&eYou came back before your dummy died. &7You have its health and are in combat again for {seconds}s."
+  players-only: "{prefix}&7Only players are ever in combat. Try &f/combattag help&7."
+  usage: "{prefix}&7Usage: &f{usage}"
+  player-not-found: "{prefix}&cNo player named {player} is online."
+  tag-done: "{prefix}&a{player} is in combat for {seconds}s."
+  untag-done: "{prefix}&a{player} is no longer in combat."
+  untag-none: "{prefix}&7{player} was not in combat."
+  dummies-header: "{prefix}&fStanding dummies: &7{count}"
+  dummies-none: "&8 - &7none"
+  dummies-line: "&8 - &f{player} &7({kind}) at {world} {x} {y} {z}, &f{health} &7health, &f{seconds}s &7left"
+  alert-logged-out: "&8[&cCombatTag&8] &f{player} &7logged out in combat at {world} {x} {y} {z}; their {kind} stands for {seconds}s."
+  alert-dummy-killed: "&8[&cCombatTag&8] &f{player}&7's dummy was killed by &f{killer} &7at {world} {x} {y} {z}: {stacks} stacks and {experience} experience dropped."
+  alert-dummy-killed-kept: "&8[&cCombatTag&8] &f{player}&7's dummy was killed by &f{killer} &7at {world} {x} {y} {z}; keepInventory is on there, nothing dropped."
+  alert-record-failed: "&8[&cCombatTag&8] &cCould not save the kill of {player}'s dummy, so nothing dropped and they keep their items. See the console."
+  alert-spawn-failed: "&8[&cCombatTag&8] &cCould not spawn a dummy for {player} at {world} {x} {y} {z}, who logged out in combat. See the console."
+  status-header: "{prefix}&f{name} &7{version} &8on &7{platform} &8- {state}"
+  state-on: "&aon"
+  state-off: "&coff (enabled: false in config.yml)"
+  reloaded: "{prefix}&aReloaded config.yml; the plugin is {state}."
+  reload-failed: "{prefix}&cconfig.yml has an error, so the defaults are running: &f{problem}"
+  unknown-command: "{prefix}&7Unknown subcommand. Try &f/{label} help&7."
+  no-permission: "{prefix}&cYou do not have permission to do that."
+  help-header: "{prefix}&fCommands:"
+  help-line: "&8 - &f/{label} {command} &7{description}"

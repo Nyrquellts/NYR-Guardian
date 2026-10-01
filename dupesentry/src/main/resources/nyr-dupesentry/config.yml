@@ -1,0 +1,103 @@
+# NYR DupeSentry
+#
+# Paper stops a handful of well-known mechanical dupes by default: piston TNT, carpet and rail dupers, sand and other
+# falling blocks duplicated through an end portal, and tripwire hook duplicators. Spigot stops none of them, and Paper stops
+# them only while its "unsupported-settings" are left alone. DupeSentry stops each of them at the moment the second copy
+# would appear, and closes a player's container screen as soon as the chest or animal behind it is gone.
+#
+# Items are never tagged, tracked or deleted from inventories: every guard stops one known mechanism in the world.
+#
+# On Paper, Purpur and Folia, a guard whose dupe the server already blocks by itself stays idle (see /dupesentry status),
+# because there is nothing left to stop. It starts working as soon as the matching Paper setting is turned on.
+#
+# After editing, run /dupesentry reload.
+
+# Switch the plugin off without removing it.
+enabled: true
+
+guards:
+  piston-dupes:
+    # TNT, carpet and rail dupers. A block a piston is pushing is lit (TNT) or breaks off (carpet, rail) while the piston
+    # still moves its old copy, so both exist. With this guard, the pushed TNT is not lit and the carpet or rail does not
+    # drop: the piston just moves them. TNT pushed first and lit later (TNT cannons, TNT pushed onto redstone) is untouched.
+    # Paper setting that turns these dupes back on: unsupported-settings.allow-piston-duplication
+    enabled: true
+    # Stop TNT dupers. Technical servers that want TNT dupers for world eaters and tunnel bores can set this to false:
+    # carpet and rail dupers are still stopped.
+    tnt: true
+    # Stop carpet and rail dupers (and any other pushed block that breaks off while the piston moves it).
+    carpets-and-rails: true
+
+  portal-gravity:
+    # Sand, gravel, concrete powder, anvils and other falling blocks that cross an end portal while they land on this side
+    # are placed in the End and dropped here as well. With this guard, a falling block never uses an end portal (to or
+    # from the End): it lands, or drops as an item, on this side.
+    # Paper setting that turns this dupe back on: unsupported-settings.allow-unsafe-end-portal-teleportation
+    enabled: true
+    # Also keep falling blocks out of nether portals. No dupe is known there, so this is off.
+    nether-portals: false
+
+  tripwire-hooks:
+    # Tripwire hook duplicators. A hook whose support goes away during the hook's own update breaks off and drops, and the
+    # game then puts it back where it was. With this guard, the hook that was put back is removed without a drop, so
+    # exactly one hook is left: the item.
+    # Paper setting that turns this dupe back on: unsupported-settings.skip-tripwire-hook-placement-validation
+    enabled: true
+
+  container-desync:
+    # Close a player's container screen the moment the chest, barrel, furnace, animal, minecart or boat behind it is
+    # broken, blown up, unloaded, killed or taken to another world, and when the player quits, dies, changes world or is
+    # teleported more than 8 blocks away from it. The game itself checks this once a tick; this closes the screen before
+    # the player can click in it again.
+    enabled: true
+    # When a player quits or dies holding an item on the cursor, put it back into their inventory (quit) or with their
+    # other drops (death) before anything is saved or dropped.
+    cursor-item: true
+    # Closing a screen is not a dupe, so staff are not alerted for it; /dupesentry status counts them.
+    alert: false
+
+worlds:
+  # Worlds the guards run in. "*" means every world.
+  enabled:
+    - "*"
+  # Worlds left alone.
+  disabled: []
+
+alerts:
+  # Staff with nyrdupesentry.alerts are told what was stopped, where and which player was nearest, and the line goes to
+  # the console and to plugins/NYR-DupeSentry/alerts.log.
+  enabled: true
+  to-staff-chat: true
+  to-console: true
+  to-log-file: true
+  # A duper that keeps running in one place is reported at most once in this many seconds (per kind and chunk).
+  cooldown-seconds: 10
+
+messages:
+  prefix: "&8[&cDupeSentry&8] "
+  alert: "{prefix}&fStopped a {dupe} &7at &f{world} {x} {y} {z}&7, nearest player &f{player}"
+  alert-no-player: "nobody nearby"
+  dupe-tnt: "TNT duper"
+  dupe-pushed-block: "{item} duper"
+  dupe-end-portal: "{item} duplicated through an end portal"
+  dupe-tripwire-hook: "tripwire hook duplicator"
+  dupe-container: "stale container screen"
+  status-guard: "&8 - &f{guard}&7: {state} &8({count} stopped since start)"
+  status-container: "&8 - &f{guard}&7: {state} &8({count} screens closed since start)"
+  guard-on: "&aon"
+  guard-on-parts: "&aon &7({parts})"
+  guard-off: "&7off in config.yml"
+  guard-server-blocks: "&7idle: {server} blocks this dupe itself ({setting}: false)"
+  guard-server-unknown: "&eidle: could not read {setting} from this {server} server"
+  part-tnt: "TNT"
+  part-carpets-and-rails: "carpets and rails"
+  part-nether: "nether portals too"
+  status-header: "{prefix}&f{name} &7{version} &8on &7{platform} &8- {state}"
+  state-on: "&aon"
+  state-off: "&coff (enabled: false in config.yml)"
+  reloaded: "{prefix}&aReloaded config.yml; DupeSentry is {state}."
+  reload-failed: "{prefix}&cconfig.yml has an error, so the defaults are running: &f{problem}"
+  unknown-command: "{prefix}&7Unknown subcommand. Try &f/{label} help&7."
+  no-permission: "{prefix}&cYou do not have permission to do that."
+  help-header: "{prefix}&fCommands:"
+  help-line: "&8 - &f/{label} {command} &7{description}"

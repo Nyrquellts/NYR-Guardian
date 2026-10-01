@@ -1,0 +1,11 @@
+{
+  "nyr": 1,
+  "outputs": [
+    {"source": "smarttick/src/main/nyr/pressure.nyr", "target": "java",
+     "output": "smarttick/src/main/java/com/nyr/guardian/smarttick/PressureRules.java",
+     "package": "com.nyr.guardian.smarttick", "class": "PressureRules"},
+    {"source": "smarttick/src/main/nyr/hysteresis.nyr", "target": "java",
+     "output": "smarttick/src/main/java/com/nyr/guardian/smarttick/HysteresisRules.java",
+     "package": "com.nyr.guardian.smarttick", "class": "HysteresisRules"}
+  ]
+}

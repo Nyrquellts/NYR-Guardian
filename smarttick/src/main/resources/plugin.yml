@@ -1,0 +1,19 @@
+name: NYR-SmartTick
+main: com.nyr.guardian.smarttick.SmartTickPlugin
+version: '${version}'
+api-version: '1.20'
+folia-supported: true
+author: NYR
+description: When the server falls behind, trading-hall villagers' brains sleep until it recovers. Nothing is removed.
+commands:
+  smarttick:
+    description: NYR SmartTick.
+    usage: /smarttick <status|sleep|wakeall|auto|check|reload>
+    aliases: [stick]
+permissions:
+  nyrsmarttick.admin:
+    description: /smarttick status, sleep, wakeall, auto, check and reload.
+    default: op
+  nyrsmarttick.alerts:
+    description: Staff alerts when the server falls behind and villagers sleep, and when it recovers.
+    default: op

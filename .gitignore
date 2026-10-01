@@ -1,0 +1,15 @@
+# Gradle and IDE output
+.gradle/
+.kotlin/
+build/
+out/
+*.iml
+.idea/
+.vscode/
+*.log
+
+# Live testbed: server run directories, downloaded jars, reports and Node packages
+testbed/run/
+testbed/reports/
+testbed/node_modules/
+__pycache__/

@@ -1,0 +1,19 @@
+name: NYR-DupeSentry
+main: com.nyr.guardian.dupesentry.DupeSentryPlugin
+version: '${version}'
+api-version: '1.20'
+folia-supported: true
+author: NYR
+description: Stops piston TNT, carpet and rail dupers, falling blocks duplicated through end portals and tripwire hook duplicators, and closes stale container screens.
+commands:
+  dupesentry:
+    description: NYR DupeSentry status and reload.
+    usage: /dupesentry <status|reload>
+    aliases: [dsentry]
+permissions:
+  nyrdupesentry.admin:
+    description: /dupesentry status and reload.
+    default: op
+  nyrdupesentry.alerts:
+    description: Receive staff alerts when a dupe is stopped.
+    default: op

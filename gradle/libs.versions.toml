@@ -1,0 +1,32 @@
+[versions]
+java = "21"
+junit = "5.11.4"
+shadow = "9.6.1"
+
+# Shaded into every plugin jar, relocated under the plugin's own package
+folialib = "0.5.2"
+
+# Pinned versions of Paper API's transitive libraries (none of them ships)
+gson = "2.11.0"
+slf4j = "2.0.16"
+
+# Test rig
+mockbukkit = "3.133.2"
+paperApi = "1.21.1-R0.1-SNAPSHOT"
+
+# Server-provided APIs (compileOnly)
+vault = "1.7"
+
+[libraries]
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+folialib = { module = "com.tcoded:FoliaLib", version.ref = "folialib" }
+vault-api = { module = "com.github.MilkBowl:VaultAPI", version.ref = "vault" }
+
+mockbukkit = { module = "com.github.seeseemelk:MockBukkit-v1.21", version.ref = "mockbukkit" }
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paperApi" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

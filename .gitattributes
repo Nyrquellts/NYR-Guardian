@@ -1,0 +1,7 @@
+# Keep the shell wrapper runnable on every platform and the Windows one on CRLF.
+gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.png binary
+*.gif binary

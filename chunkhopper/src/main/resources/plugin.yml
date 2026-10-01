@@ -1,0 +1,26 @@
+name: NYR-ChunkHopper
+main: com.nyr.guardian.chunkhopper.ChunkHopperPlugin
+version: '${version}'
+api-version: '1.20'
+folia-supported: true
+author: NYR
+description: One hopper per chunk collects every drop in that chunk the moment it drops, filters it and can sell it.
+softdepend: [Vault, Essentials]
+commands:
+  chunkhopper:
+    description: Chunk Hoppers - give, list, info; status and reload for staff.
+    usage: /chunkhopper [give|list|info|status|reload|help]
+    aliases: [ch, chunkhoppers]
+permissions:
+  nyrchunkhopper.use:
+    description: Place Chunk Hoppers, open the filter of your own, /chunkhopper list and info for your own.
+    default: true
+  nyrchunkhopper.admin:
+    description: /chunkhopper give, list and info for anyone, status and reload; break and open anyone's Chunk Hopper.
+    default: op
+  nyrchunkhopper.alerts:
+    description: See staff alerts (a sale the economy refused, a filter icon found on a player).
+    default: op
+  nyrchunkhopper.limit.unlimited:
+    description: No limit on how many Chunk Hoppers this player may own.
+    default: false

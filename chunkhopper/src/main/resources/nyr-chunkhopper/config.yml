@@ -1,0 +1,202 @@
+# NYR ChunkHopper
+#
+# One Chunk Hopper per chunk collects the items that drop in that chunk the moment they drop: mob farm loot, cactus and
+# sugar cane, crops, blocks an explosion breaks. A collected item never becomes an item on the ground, so drops cannot
+# pile up, lag the server or despawn. A Chunk Hopper is a real hopper: it still feeds a chest below it.
+#
+# Its owner can set a filter (9 slots; shift + right-click the hopper with an empty hand) and, with Vault and an economy
+# plugin, have it sell what it collects into their balance.
+#
+# Never collected, whatever the filter says: items a player throws or drops, what /give hands out, a player's death
+# drops, a player's fishing catch, and (unless collect.player-mined is on) the drops of blocks a player breaks.
+#
+# After editing, run /chunkhopper reload.
+
+# Switch the plugin off without removing it. Placed Chunk Hoppers then work as plain hoppers until it is back on.
+enabled: true
+
+# The Chunk Hopper item. & colour codes and &#rrggbb hex colours work.
+item:
+  name: "&6Chunk Hopper"
+  lore:
+    - "&7Collects every item that drops"
+    - "&7in its chunk, the moment it drops."
+    - "&8Shift + right-click it with an empty hand"
+    - "&8to set what it collects."
+  # The enchanted shimmer on the item.
+  glint: true
+
+# A crafting recipe for the Chunk Hopper. Staff can always hand them out with /chunkhopper give.
+recipe:
+  enabled: true
+  # Three rows of three; a space is an empty slot. Every letter used here needs an ingredient below.
+  shape:
+    - "IHI"
+    - "HEH"
+    - "IHI"
+  ingredients:
+    I: iron_block
+    H: hopper
+    E: ender_pearl
+
+collect:
+  # Collect the drops of blocks a player breaks by hand in the chunk. Off by default, so a player mining or harvesting
+  # there keeps what they break.
+  player-mined: false
+
+limits:
+  # How many Chunk Hoppers one player may own, in all worlds together. 0 means no limit. A player with the permission
+  # nyrchunkhopper.limit.<n> may own n instead (the highest such permission counts); nyrchunkhopper.limit.unlimited
+  # removes the limit. Only one Chunk Hopper fits in a chunk, whoever owns it.
+  per-player: 0
+
+# Only the owner and staff (nyrchunkhopper.admin) can break a Chunk Hopper or open its filter.
+protect-from-others: true
+
+# Explosions (TNT, creepers, respawn anchors, withers) and mobs do not destroy Chunk Hoppers.
+explosion-proof: true
+
+# Selling needs Vault and an economy plugin (EssentialsX, CMI and the like). Without them nothing is sold and the
+# filter menu does not show the switch.
+auto-sell:
+  # Whether a newly placed Chunk Hopper sells; its owner switches it in the filter menu.
+  default-on: true
+  # How often every Chunk Hopper sells what it holds. A full Chunk Hopper also sells at once when a drop does not fit.
+  interval-seconds: 10
+  # Where prices come from:
+  #   auto         EssentialsX's worth.yml when EssentialsX is installed and prices the item, otherwise the prices below
+  #   prices-only  only the prices below
+  price-source: auto
+  # Tell the owner, if online, what was sold: at most one message per interval, all of their Chunk Hoppers together.
+  notify-owner: true
+
+# Price of one item, by Minecraft id. Items with no price here (or a price of 0) are never sold and stay in the hopper.
+# Entries you delete stay deleted.
+prices:
+  cactus: 2.0
+  sugar_cane: 2.0
+  bamboo: 0.5
+  kelp: 0.5
+  wheat: 2.0
+  carrot: 1.0
+  potato: 1.0
+  beetroot: 1.0
+  melon_slice: 0.5
+  pumpkin: 4.0
+  cocoa_beans: 1.0
+  nether_wart: 1.0
+  sweet_berries: 0.5
+  rotten_flesh: 0.5
+  bone: 1.0
+  arrow: 0.5
+  string: 1.0
+  spider_eye: 1.0
+  gunpowder: 2.0
+  ender_pearl: 5.0
+  blaze_rod: 5.0
+  slime_ball: 2.0
+  magma_cream: 2.0
+  phantom_membrane: 3.0
+  ghast_tear: 10.0
+  leather: 2.0
+  feather: 0.5
+  egg: 0.5
+  beef: 1.0
+  porkchop: 1.0
+  chicken: 1.0
+  mutton: 1.0
+  white_wool: 1.0
+  ink_sac: 1.0
+  iron_ingot: 5.0
+  gold_nugget: 0.5
+  gold_ingot: 5.0
+  prismarine_shard: 1.0
+  prismarine_crystals: 1.0
+
+worlds:
+  # Worlds where Chunk Hoppers collect and can be placed. "*" means every world.
+  enabled:
+    - "*"
+  # Worlds left alone. A Chunk Hopper there is a plain hopper.
+  disabled: []
+
+alerts:
+  # Staff with nyrchunkhopper.alerts are told when the economy refused a sale (the items went back into the hopper) and
+  # when a filter icon was found on a player and removed. The line also goes to the console and to
+  # plugins/NYR-ChunkHopper/alerts.log.
+  enabled: true
+  to-staff-chat: true
+  to-console: true
+  to-log-file: true
+  # The same alert is sent at most once in this many seconds.
+  cooldown-seconds: 10
+
+messages:
+  prefix: "&8[&6ChunkHopper&8] "
+  placed: "{prefix}&aChunk Hopper placed. &7It collects the drops in this chunk. Shift + right-click it with an empty hand to set a filter."
+  one-per-chunk: "{prefix}&cThis chunk already has a Chunk Hopper &7(at {x}, {y}, {z})&c."
+  limit-reached: "{prefix}&cYou already own {count} Chunk Hopper(s), your limit."
+  world-disabled: "{prefix}&cChunk Hoppers do not work in this world."
+  not-yours: "{prefix}&cThis Chunk Hopper belongs to &f{owner}&c."
+  need-pickaxe: "{prefix}&cBreak a Chunk Hopper with a pickaxe, or it would drop nothing."
+  broken: "{prefix}&7Chunk Hopper removed."
+  plugin-off: "{prefix}&cNYR ChunkHopper is switched off in config.yml."
+  sold: "{prefix}&a+{amount} &7from your Chunk Hopper &8({items} items)"
+  filter-full: "{prefix}&cAll 9 filter slots are in use. Click one with an empty hand to free it."
+  given: "{prefix}&aGave &f{amount} &aChunk Hopper(s) to &f{player}&a."
+  received: "{prefix}&aYou received &f{amount} &aChunk Hopper(s)."
+  give-usage: "{prefix}&7Usage: /chunkhopper give <player> [amount]"
+  player-not-found: "{prefix}&cNo online player named &f{player}&c."
+  players-only: "{prefix}&cOnly players can use that."
+  list-header: "{prefix}&f{player}&7 owns &f{count} &7Chunk Hopper(s):"
+  list-line: "&8 - &7{world} &f{x} {y} {z}"
+  list-empty: "&8 - &7none"
+  info-none: "{prefix}&7Look at a Chunk Hopper within 5 blocks."
+  info-header: "{prefix}&fChunk Hopper &7at {world} {x} {y} {z}"
+  info-owner: "&8 - &7Owner: &f{owner}"
+  info-filter: "&8 - &7Filter: &f{filter}"
+  info-sell: "&8 - &7Auto-sell: &f{state}"
+  info-counters: "&8 - &7Collected: &f{collected} &8| &7Earned: &f{earned}"
+  info-holds: "&8 - &7Holds: &f{items}"
+  holds-nothing: "nothing"
+  alert-deposit-failed: "{prefix}&cThe economy refused to pay &f{owner} {amount}&c for a Chunk Hopper sale at {world} {x} {y} {z} ({reason}). The items went back."
+  alert-ghost: "{prefix}&c{player} &7had &f{count} &7filter icon(s) from a Chunk Hopper menu; removed."
+  alert-rolled-back: "{prefix}&cThe world came back from a crash older than {sales} sale(s) of the Chunk Hopper at {world} {x} {y} {z} &7({items} items, {amount} paid)&c: the {taken} item(s) found again were taken out, so nothing is paid twice."
+  # The filter menu.
+  menu-title: "&8Chunk Hopper"
+  menu-filter-lore:
+    - "&aCollected by this Chunk Hopper."
+    - "&8Click with an empty hand to remove."
+  menu-info: "&6Chunk Hopper"
+  menu-info-lore:
+    - "&7Owner: &f{owner}"
+    - "&7Items collected: &f{collected}"
+    - "&7Money earned: &f{earned}"
+    - "&7Filter: &f{filter}"
+    - "&8Click a free slot above with an item on your"
+    - "&8cursor, or shift-click one of your own items,"
+    - "&8to collect only that. Nothing moves."
+  menu-sell-on: "&aAuto-sell: on"
+  menu-sell-on-lore:
+    - "&7Sells what it holds every {interval} seconds."
+    - "&8Click to switch off."
+  menu-sell-off: "&cAuto-sell: off"
+  menu-sell-off-lore:
+    - "&7Keeps what it collects."
+    - "&8Click to switch on."
+  menu-clear: "&cClear the filter"
+  menu-clear-lore:
+    - "&8Then it collects everything again."
+  filter-everything: "everything"
+  state-yes: "on"
+  state-no: "off"
+  # Shared by every NYR plugin.
+  status-header: "{prefix}&f{name} &7{version} &8on &7{platform} &8- {state}"
+  state-on: "&aon"
+  state-off: "&coff (enabled: false in config.yml)"
+  reloaded: "{prefix}&aReloaded config.yml; the plugin is {state}."
+  reload-failed: "{prefix}&cconfig.yml has an error, so the defaults are running: &f{problem}"
+  unknown-command: "{prefix}&7Unknown subcommand. Try &f/{label} help&7."
+  no-permission: "{prefix}&cYou do not have permission to do that."
+  help-header: "{prefix}&fCommands:"
+  help-line: "&8 - &f/{label} {command} &7{description}"

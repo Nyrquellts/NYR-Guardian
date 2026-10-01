@@ -1,0 +1,32 @@
+name: NYR-CombatTagPro
+main: com.nyr.guardian.combattag.CombatTagPlugin
+version: '${version}'
+api-version: '1.20'
+folia-supported: true
+author: NYR
+description: Players hit in PvP are tagged; one who logs out in combat leaves a killable dummy that carries what they carried.
+commands:
+  combattag:
+    description: Your combat state; tag, untag, dummies, status and reload for staff.
+    usage: /combattag [tag|untag|dummies|status|reload|help]
+    aliases: [ct, combat]
+permissions:
+  nyrcombattagpro.check:
+    description: /combattag shows your own combat state.
+    default: true
+  nyrcombattagpro.admin:
+    description: /combattag tag, untag, dummies, status and reload.
+    default: op
+  nyrcombattagpro.alerts:
+    description: Staff chat alerts when a player logs out in combat and when a dummy is killed.
+    default: op
+  nyrcombattagpro.bypass:
+    description: Never tagged, never refused a command, never leaves a dummy. Not part of nyrcombattagpro.*; give it on its own.
+    default: false
+  nyrcombattagpro.*:
+    description: check, admin and alerts (not bypass).
+    default: op
+    children:
+      nyrcombattagpro.check: true
+      nyrcombattagpro.admin: true
+      nyrcombattagpro.alerts: true

@@ -1,0 +1,21 @@
+# Where one load reading stands against the thresholds of its unit (Settings.classify).
+# nyrc compiles this file (guardian/nyr.json) into PressureRules.java; never edit that class.
+# Settings.classify calls it for a reading that exists and is a number; a missing or NaN reading is
+# UNKNOWN there, before these rules run.
+#
+# Inputs   value            the reading
+#          unit             0 milliseconds per tick (higher is worse), 1 ticks per second (lower is worse)
+#          mspt_sleep_at, mspt_wake_at, tps_sleep_below, tps_wake_at    config.yml's thresholds
+# Signals  one of High, Low, Between
+
+High := 0            # at or past the sleep threshold
+Low := 1             # at or past the wake threshold
+Between := 2         # between the two: the current state stays
+
+[unit == 0] and [value >= mspt_sleep_at] => S(High)
+[unit == 0] and not [value >= mspt_sleep_at] and [value <= mspt_wake_at] => S(Low)
+[unit == 0] and not [value >= mspt_sleep_at] and not [value <= mspt_wake_at] => S(Between)
+
+[unit != 0] and [value < tps_sleep_below] => S(High)
+[unit != 0] and not [value < tps_sleep_below] and [value >= tps_wake_at] => S(Low)
+[unit != 0] and not [value < tps_sleep_below] and not [value >= tps_wake_at] => S(Between)

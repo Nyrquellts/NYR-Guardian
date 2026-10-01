@@ -1,0 +1,68 @@
+# Whether the server (or one region) counts as behind, fed one reading at a time (Hysteresis.update).
+# nyrc compiles this file (guardian/nyr.json) into HysteresisRules.java; never edit that class.
+#
+# It becomes behind only after readings at or past the sleep threshold for the whole hold time, and
+# recovers only after readings at or past the wake threshold for the whole hold time, so one spike does
+# nothing and a reading between the thresholds keeps the state. A relapse -- behind again within
+# Relapse of recovering, because the sleeping villagers were what the server had been carrying -- keeps
+# the next sleep going for at least FirstBackoff, doubling up to MaxBackoff; a recovery that holds for
+# Relapse forgets it.
+#
+# Every rule reads the state as it was before this reading (a rule does not see another's updates), so
+# "start the streak at this reading" is written out in each rule that depends on it: a streak that
+# starts now has lasted 0 ms, so it counts only when the hold time is 0.
+#
+# Inputs   behind              1 behind, 0 not
+#          pressure            this reading: 0 high, 1 low, 2 between, 3 unknown (changes nothing)
+#          now, hold           milliseconds on a monotonic clock; the hold time
+#          high_since, low_since                 when the current streak began, -1 for none
+#          behind_since, recovered_at, min_behind   the last change each way, and this sleep's minimum
+# Outputs  the same state fields; S(Changed) when this reading changed whether it is behind
+
+High := 0
+Low := 1
+Between := 2             # (no rule tests it: between the thresholds, nothing changes)
+Unknown := 3
+Changed := 1
+Relapse := 300000        # 5 minutes
+FirstBackoff := 120000   # 2 minutes
+MaxBackoff := 3600000    # 60 minutes
+
+# -- not behind: any known reading ends a low streak; one that is not high ends the high streak
+[behind == 0] and [pressure != Unknown] => low_since <- -1
+[behind == 0] and [pressure != Unknown] and [pressure != High] => high_since <- -1
+
+# a first high reading starts the streak
+[behind == 0] and [pressure == High] and [high_since < 0] and [hold > 0] => high_since <- now
+
+# high for the whole hold time: behind now, for at least the backoff a relapse earns
+[behind == 0] and [pressure == High]
+    and (([high_since < 0] and [hold <= 0]) or ([high_since >= 0] and [now - high_since >= hold]))
+    => behind <- 1, behind_since <- now, high_since <- -1, S(Changed)
+[behind == 0] and [pressure == High]
+    and (([high_since < 0] and [hold <= 0]) or ([high_since >= 0] and [now - high_since >= hold]))
+    and [now - recovered_at > Relapse]
+    => min_behind <- 0
+[behind == 0] and [pressure == High]
+    and (([high_since < 0] and [hold <= 0]) or ([high_since >= 0] and [now - high_since >= hold]))
+    and [now - recovered_at <= Relapse] and [min_behind == 0]
+    => min_behind <- FirstBackoff
+[behind == 0] and [pressure == High]
+    and (([high_since < 0] and [hold <= 0]) or ([high_since >= 0] and [now - high_since >= hold]))
+    and [now - recovered_at <= Relapse] and [min_behind != 0]
+    => min_behind <- min(MaxBackoff, min_behind * 2)
+
+# -- behind: any known reading ends a high streak; one that is not low ends the low streak
+[behind != 0] and [pressure != Unknown] => high_since <- -1
+[behind != 0] and [pressure != Unknown] and [pressure != Low] => low_since <- -1
+
+# low for the whole hold time, and this sleep has lasted its minimum: recovered
+[behind != 0] and [pressure == Low]
+    and (([low_since < 0] and [hold <= 0]) or ([low_since >= 0] and [now - low_since >= hold]))
+    and [now - behind_since >= min_behind]
+    => behind <- 0, recovered_at <- now, low_since <- -1, S(Changed)
+
+# otherwise a first low reading starts the streak
+[behind != 0] and [pressure == Low] and [low_since < 0]
+    and not ([hold <= 0] and [now - behind_since >= min_behind])
+    => low_since <- now

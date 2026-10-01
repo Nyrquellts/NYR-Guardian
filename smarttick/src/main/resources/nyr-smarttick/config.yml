@@ -1,0 +1,142 @@
+# NYR SmartTick
+#
+# Villagers think every tick: they look for work, beds and each other, gossip and plan paths. In a trading hall, where each
+# villager stands in its own cell next to its job site, all of that thinking goes nowhere. When the server falls behind,
+# SmartTick puts those villagers' brains to sleep (the same switch as Bukkit's Mob#setAware). Players can still trade with
+# them, and SmartTick restocks their trades the way the game would. When the server catches up, they wake.
+#
+# Nothing is ever removed, killed or despawned. Villagers another plugin put to sleep are never touched.
+#
+# Sleep pauses the villagers the server ticks in full: those within the entity activation range of a player (spigot.yml).
+# Farther away the server ticks villagers as "inactive" and, while spigot.yml says entity-activation-range:
+# tick-inactive-villagers: true (the default), runs their brains itself, asleep or not. Set it to false for sleep to pause
+# them too. On Spigot it also matters next to players: Spigot gives nearby villagers one inactive tick in four.
+#
+# Before removing the plugin, run /smarttick wakeall. After editing this file, run /smarttick reload.
+
+# Switch the plugin off without removing it. Switching it off with /smarttick reload wakes every sleeping villager.
+enabled: true
+
+# When the server counts as behind. SmartTick uses the best reading your server offers (/smarttick shows which):
+#   Paper and Purpur: milliseconds per tick (MSPT), the server's 5-second average. 50 ms is the most a tick may take
+#                     for 20 TPS, so villagers sleep before players notice lag.
+#   Folia:            each region's own reading, decided per region: a villager sleeps when the region it stands in is
+#                     behind, however the rest of the server is doing.
+#   Spigot:           Spigot reports no tick time, so SmartTick counts ticks per second (TPS) itself and uses the tps
+#                     thresholds below. It reacts once the server is below 20 TPS.
+mspt:
+  # Villagers sleep when a tick takes this many milliseconds or more...
+  sleep-at: 40
+  # ...and wake when it takes this many or fewer. Keep it below sleep-at, so they do not flip back and forth.
+  wake-at: 35
+tps:
+  # Where TPS is the reading: villagers sleep below this TPS...
+  sleep-below: 19.0
+  # ...and wake at this TPS or above. Keep it above sleep-below.
+  wake-at: 19.8
+# A reading must stay past its threshold this many seconds before villagers sleep or wake, so one lag spike does nothing.
+# When the villagers themselves are what puts the server behind, waking them brings the lag straight back: if the server
+# falls behind again within 5 minutes of them waking, the next sleep lasts at least 2 minutes, then 4, 8 and so on up to
+# an hour, however good the reading looks while they sleep. A recovery that lasts 5 minutes resets this.
+hold-seconds: 5
+
+# Which villagers may sleep. A villager needs a profession (not a nitwit), a job site next to it, and no bed; nobody may be
+# trading with it, leading it or sharing its vehicle, and it must be unable to go anywhere: walled in, sitting in a
+# vehicle (minecart, boat), or standing still for stationary-minutes. Babies never sleep.
+#
+# Villagers with a bed keep their brains: iron farms and villager breeders need them (golems spawn from villager gossip and
+# panic). Set this to false only if your trading hall villagers have beds.
+skip-villagers-with-beds: true
+# A villager that has stayed within 1.5 blocks of one spot this long counts as unable to go anywhere, even without walls.
+stationary-minutes: 5
+
+# Sleeping villagers cannot restock by themselves. With this on, SmartTick restocks a sleeping villager standing next to its
+# job site during its work hours, at most twice a Minecraft day, as the game allows an awake one.
+restock-while-asleep: true
+
+# How often SmartTick looks at every loaded villager, spread evenly over this many seconds.
+scan-seconds: 5
+# At most this many villagers fall asleep or wake per second, so waking 2,000 villagers at once is not a lag spike itself.
+batch-per-second: 200
+
+worlds:
+  # Worlds where villagers may sleep. "*" means every world.
+  enabled:
+    - "*"
+  # Worlds left alone, even when "*" is enabled. Villagers asleep there wake.
+  disabled: []
+
+alerts:
+  # Staff with nyrsmarttick.alerts are told when the server falls behind and villagers sleep, and when it catches up.
+  # The same line goes to the console and to plugins/NYR-SmartTick/alerts.log.
+  enabled: true
+  to-staff-chat: true
+  to-console: true
+  to-log-file: true
+  # The same alert at most once in this many seconds.
+  cooldown-seconds: 300
+
+messages:
+  prefix: "&8[&bSmartTick&8] "
+  status-header: "{prefix}&f{name} &7{version} &8on &7{platform} &8- {state}"
+  state-on: "&aon"
+  state-off: "&coff (enabled: false in config.yml)"
+  status-load: "&7Load: &f{reading} &8({source})"
+  status-load-regions: "&7Load: &f{source}&7; at the last scan &f{behind} &7of &f{seen} &7villagers stood in regions behind"
+  status-mspt: "&7Sleep at &f{sleep} ms &7per tick or more, wake at &f{wake} ms &7or less, each held &f{hold} s"
+  status-tps: "&7Sleep below &f{sleep} TPS&7, wake at &f{wake} TPS &7or more, each held &f{hold} s"
+  status-mode: "&7Mode: &f{mode}"
+  mode-auto-keeping-up: "following the load: the server keeps up, villagers are awake"
+  mode-auto-behind: "following the load: the server is behind, eligible villagers sleep"
+  mode-auto-regions: "following the load, region by region"
+  mode-sleep: "&esleeping every eligible villager (/smarttick sleep) &7until /smarttick auto"
+  mode-awake: "&ekeeping every villager awake (/smarttick wakeall) &7until /smarttick auto"
+  status-held: "&7They sleep at least &f{minutes} min &7more: the server fell behind again soon after they last woke"
+  status-first-scan: "&7Villagers: &fthe first scan is still running"
+  status-villagers: "&7Villagers at the last scan: &f{seen} &7loaded, &f{eligible} &7eligible, &f{asleep} &7asleep, &f{others} &7put to sleep by other plugins &8(scan every {every} s, at most {rate} change per second)"
+  status-totals: "&7Since start: &f{slept} &7put to sleep, &f{woken} &7woken, &f{restocked} &7restocked asleep; woken as their chunk unloaded &f{unload}&7, as it loaded &f{load}&7, kept asleep on load &f{kept}"
+  status-restock-server: "&7Restocks while asleep: &fon &8(the server's own restock)"
+  status-restock-trades: "&7Restocks while asleep: &fon &8(trade by trade: this server has no restock API)"
+  status-restock-off: "&7Restocks while asleep: &coff"
+  sleep-started: "{prefix}&aEvery eligible villager goes to sleep now, at most {rate} per second. &7They sleep whatever the load until &f/smarttick auto&7, &f/smarttick wakeall&7, a reload or a restart."
+  wakeall-started: "{prefix}&aWaking every sleeping villager, at most {rate} per second. &7They stay awake until &f/smarttick auto&7, a reload or a restart."
+  wakeall-done: "{prefix}&aEvery loaded villager is awake."
+  auto-started: "{prefix}&aVillagers follow the server load again."
+  plugin-off: "{prefix}&cSmartTick is switched off in config.yml."
+  players-only: "{prefix}&cOnly players can use that."
+  check-load: "{prefix}&7Load in this region: &f{reading}"
+  check-header: "{prefix}&f{count} &7villager(s) within {radius} blocks:"
+  check-line: "&8 - {state} &7{profession} at &f{x} {y} {z}&7: {reason}"
+  check-more: "&8 - &7and {count} more"
+  check-radius: "{prefix}&cThe radius is a number of blocks, 1 to 32."
+  state-asleep: "&basleep"
+  state-awake: "&aawake"
+  state-unaware: "&eunaware (another plugin)"
+  reason-enclosed: "may sleep: walled in"
+  reason-in-vehicle: "may sleep: sits in a vehicle"
+  reason-still: "may sleep: has not moved for {minutes} min"
+  reason-world: "stays awake: SmartTick is off in this world"
+  reason-baby: "stays awake: a baby"
+  reason-no-ai: "stays awake: its AI is switched off"
+  reason-npc: "stays awake: another plugin's NPC"
+  reason-no-profession: "stays awake: no profession"
+  reason-nitwit: "stays awake: a nitwit"
+  reason-in-bed: "stays awake: sleeping in a bed"
+  reason-trading: "stays awake: a player is trading with it"
+  reason-just-traded: "stays awake: traded or lost its job site a moment ago"
+  reason-leashed: "stays awake: on a lead"
+  reason-with-player: "stays awake: shares a vehicle with a player"
+  reason-no-job-site: "stays awake: no job site"
+  reason-job-site-gone: "stays awake: its job site block is gone"
+  reason-bed: "stays awake: has a bed (skip-villagers-with-beds)"
+  reason-free: "stays awake: can walk away and has not stood still for {minutes} min"
+  alert-behind: "{prefix}&eThe server is behind ({reading}): eligible villagers go to sleep."
+  alert-recovered: "{prefix}&aThe server caught up ({reading}): sleeping villagers wake."
+  alert-regions-behind: "{prefix}&eRegions fell behind: {count} villager(s) stand in them and may sleep."
+  alert-regions-recovered: "{prefix}&aNo region is behind any more: sleeping villagers wake."
+  reloaded: "{prefix}&aReloaded config.yml; the plugin is {state}."
+  reload-failed: "{prefix}&cconfig.yml has an error, so the defaults are running: &f{problem}"
+  unknown-command: "{prefix}&7Unknown subcommand. Try &f/{label} help&7."
+  no-permission: "{prefix}&cYou do not have permission to do that."
+  help-header: "{prefix}&fCommands:"
+  help-line: "&8 - &f/{label} {command} &7{description}"
