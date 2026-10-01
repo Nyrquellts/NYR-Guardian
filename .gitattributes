@@ -1,7 +1,8 @@
-# Keep the shell wrapper runnable on every platform and the Windows one on CRLF.
-gradlew text eol=lf
-*.sh text eol=lf
+# Check every text file out with LF on every platform, so any checkout (Windows included) builds byte-identical
+# downloads. Only the Windows wrapper keeps CRLF.
+* text=auto eol=lf
 *.bat text eol=crlf
 *.jar binary
+*.zip binary
 *.png binary
 *.gif binary
